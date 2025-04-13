@@ -63,11 +63,11 @@
     color: black !important;
     padding: 10px !important;
     margin: 10px !important;
-    width: 98% !important;
+    width: 97% !important;
 }
 
 .rbc-event:nth-child(1){
-    background-color: red !important;
+    background-color: #e2f8ff !important;
 }
 .rbc-event:nth-child(2){
     background-color: #fefce8 !important;
@@ -89,4 +89,8 @@
 }
 .rbc-event:nth-child(8){
     background-color: #fdf2fb !important;
+}
+.rbc-event-label {
+    color: gray !important;
+    margin-bottom: 5px !important;
 }
