@@ -1,19 +1,19 @@
 import Pagination from "@/components/Pagination"
 import Table from "@/components/Table"
 import TableSearch from "@/components/TableSearch"
-import { role, teachersData } from "@/lib/data"
+import { role, studentsData, teachersData } from "@/lib/data"
 import Image from "next/image"
 import Link from "next/link"
 
-type Teacher = {
+type Student = {
   id:number,
-  teacherId:string,
+  studentId:string,
   name:string,
   photo:string
   email?:string,
-  phone:string,
-  subjects:string[],
-  classes:string[],
+  phone?:string,
+  grade: number,
+  class:string,
   address:string,
 }
 
@@ -23,19 +23,14 @@ const column = [
     accessor: "info",
   },
   {
-    header: "Teacher ID", 
+    header: "Strudent ID", 
     accessor: "teacherId", 
     className: "hidden md:table-cell"
   },
   {
-    header: "Subjects", 
-    accessor: "sujects", 
+    header: "Grade", 
+    accessor: "grade", 
     className: "hidden md:table-cell"
-  },
-  {
-    header:"Classes", 
-    accessor: "classes",
-    className:"hidden md:table-cell"
   },
   {
     header:"Phone", 
@@ -54,9 +49,9 @@ const column = [
 ]
 
 
-const TeacherList = () => {
+const StudentList = () => {
 
-  const renderRow = ((item:Teacher)=> (
+  const renderRow = ((item:Student)=> (
     <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
       <td className="flex items-center gap-4 p-4">
         <Image src={item.photo} alt={item.name} width={40} height={40} className="md:hidden lg:block w-10 h-10 rounded-full object-cover"/>
@@ -65,9 +60,8 @@ const TeacherList = () => {
           <p className="text-xs text-gray-500">{item?.email}</p>
         </div>
       </td>
-      <td className="hidden md:table-cell">{item.teacherId}</td>
-      <td className="hidden md:table-cell">{item.subjects.join(",")}</td>
-      <td className="hidden md:table-cell">{item.classes.join(',')}</td>
+      <td className="hidden md:table-cell">{item.studentId}</td>
+      <td className="hidden md:table-cell">{item.grade}</td>
       <td className="hidden lg:table-cell">{item.phone}</td>
       <td className="hidden lg:table-cell">{item.address}</td>
       <td>
@@ -102,16 +96,16 @@ const TeacherList = () => {
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src={'/sort.png'} alt="" width={14} height={14} />
             </button>
-            {role === "admin" && <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
+           {role === "admin" && <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src={'/plus.png'} alt="" width={14} height={14} />
             </button>
-              }
+            }
           </div>
         </div>
       </div>
       {/* LIST */}
       <div className="">
-        <Table columns={column} renderRow={renderRow} data={teachersData}/>
+        <Table columns={column} renderRow={renderRow} data={studentsData}/>
       </div>
       {/* PAGINATION */}
       <Pagination />
@@ -119,4 +113,4 @@ const TeacherList = () => {
   )
 }
 
-export default TeacherList
+export default StudentList
