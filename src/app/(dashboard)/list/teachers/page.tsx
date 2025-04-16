@@ -5,18 +5,11 @@ import TableSearch from "@/components/TableSearch"
 import { role, teachersData } from "@/lib/data"
 import Image from "next/image"
 import Link from "next/link"
+import { Class, Subject, Teacher } from "@prisma/client"
+import prisma from "@/lib/prisma"
+import { ITEM_PER_PAGE } from "@/lib/settings"
 
-type Teacher = {
-  id:number,
-  teacherId:string,
-  name:string,
-  photo:string
-  email?:string,
-  phone:string,
-  subjects:string[],
-  classes:string[],
-  address:string,
-}
+type TeacherData =  Teacher & {subjects: Subject[], classes: Class[]}
 
 const column = [
   {
@@ -54,38 +47,59 @@ const column = [
   },
 ]
 
+const renderRow = ((item:TeacherData)=> (
+  <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
+    <td className="flex items-center gap-4 p-4">
+      <Image src={item.img || "/noAvatar.png"} alt={item.name} width={40} height={40} className="md:hidden lg:block w-10 h-10 rounded-full object-cover"/>
+      <div className="flex flex-col">
+        <h3 className="font-semibold">{item.name}</h3>
+        <p className="text-xs text-gray-500">{item?.email}</p>
+      </div>
+    </td>
+    <td className="hidden md:table-cell">{item.username}</td>
+    <td className="hidden md:table-cell">{item.subjects.map(item=>item.name).join(",")}</td>
+    <td className="hidden md:table-cell">{item.classes.map(item=>item.name).join(',')}</td>
+    <td className="hidden lg:table-cell">{item.phone}</td>
+    <td className="hidden lg:table-cell">{item.address}</td>
+    <td>
+      <div className="flex items-center gap-2">
+          <Link href={`/list/teachers/${item.id}`}>
+          <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaSky">
+            <Image src={'/view.png'} alt="" width={16} height={16}/>
+          </button>
+          </Link>
+          {role === "admin" && (
+            <FormModal table="teacher" type="delete" id={parseInt(item.id)}/>
+          )}
+      </div>
+    </td>
 
-const TeacherList = () => {
+  </tr>
+))
 
-  const renderRow = ((item:Teacher)=> (
-    <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
-      <td className="flex items-center gap-4 p-4">
-        <Image src={item.photo} alt={item.name} width={40} height={40} className="md:hidden lg:block w-10 h-10 rounded-full object-cover"/>
-        <div className="flex flex-col">
-          <h3 className="font-semibold">{item.name}</h3>
-          <p className="text-xs text-gray-500">{item?.email}</p>
-        </div>
-      </td>
-      <td className="hidden md:table-cell">{item.teacherId}</td>
-      <td className="hidden md:table-cell">{item.subjects.join(",")}</td>
-      <td className="hidden md:table-cell">{item.classes.join(',')}</td>
-      <td className="hidden lg:table-cell">{item.phone}</td>
-      <td className="hidden lg:table-cell">{item.address}</td>
-      <td>
-        <div className="flex items-center gap-2">
-            <Link href={`/list/teachers/${item.id}`}>
-            <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaSky">
-              <Image src={'/view.png'} alt="" width={16} height={16}/>
-            </button>
-            </Link>
-            {role === "admin" && (
-              <FormModal table="teacher" type="delete" id={item.id}/>
-            )}
-        </div>
-      </td>
 
-    </tr>
-  ))
+
+
+const TeacherList = async ({searchParams}:{
+  searchParams: {[key: string]: string | undefined }
+}) => {
+
+  const {page, ...quaryParams} = searchParams;
+
+  const p = page ? parseInt(page) : 1;
+
+  const [data, count] = await prisma.$transaction([
+    prisma.teacher.findMany({
+      include: {
+        subjects: true,
+        classes: true
+      },
+      take: ITEM_PER_PAGE,
+      skip: ITEM_PER_PAGE * (p-1)
+    }),
+    prisma.teacher.count()
+  ])
+
 
   return (
     <div className='bg-white p-4 rounded-md flex-1 m-4 mt-0'>
@@ -108,10 +122,10 @@ const TeacherList = () => {
       </div>
       {/* LIST */}
       <div className="">
-        <Table columns={column} renderRow={renderRow} data={teachersData}/>
+        <Table columns={column} renderRow={renderRow} data={data}/>
       </div>
       {/* PAGINATION */}
-      <Pagination />
+      <Pagination page={p} count={count}/>
     </div>
   )
 }
