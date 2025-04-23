@@ -5,72 +5,72 @@ import TableSearch from "@/components/TableSearch"
 import { role, teachersData } from "@/lib/data"
 import Image from "next/image"
 import Link from "next/link"
-import { Class, Subject, Teacher } from "@prisma/client"
+import { Class, Prisma, Subject, Teacher } from "@prisma/client"
 import prisma from "@/lib/prisma"
 import { ITEM_PER_PAGE } from "@/lib/settings"
 
-type TeacherData =  Teacher & {subjects: Subject[], classes: Class[]}
+type TeacherData = Teacher & { subjects: Subject[], classes: Class[] }
 
 const column = [
   {
-    header: "Info", 
+    header: "Info",
     accessor: "info",
   },
   {
-    header: "Teacher ID", 
-    accessor: "teacherId", 
+    header: "Teacher ID",
+    accessor: "teacherId",
     className: "hidden md:table-cell"
   },
   {
-    header: "Subjects", 
-    accessor: "sujects", 
+    header: "Subjects",
+    accessor: "sujects",
     className: "hidden md:table-cell"
   },
   {
-    header:"Classes", 
+    header: "Classes",
     accessor: "classes",
-    className:"hidden md:table-cell"
+    className: "hidden md:table-cell"
   },
   {
-    header:"Phone", 
+    header: "Phone",
     accessor: "phone",
-    className:"hidden lg:table-cell"
+    className: "hidden lg:table-cell"
   },
   {
-    header:"Address", 
+    header: "Address",
     accessor: "address",
-    className:"hidden lg:table-cell"
+    className: "hidden lg:table-cell"
   },
   {
-    header:"Actions", 
+    header: "Actions",
     accessor: "action",
   },
 ]
 
-const renderRow = ((item:TeacherData)=> (
+const renderRow = ((item: TeacherData) => (
   <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
     <td className="flex items-center gap-4 p-4">
-      <Image src={item.img || "/noAvatar.png"} alt={item.name} width={40} height={40} className="md:hidden lg:block w-10 h-10 rounded-full object-cover"/>
+      <Image src={item.img || "/noAvatar.png"} alt={item.name} width={40} height={40} className="md:hidden lg:block w-10 h-10 rounded-full object-cover" />
       <div className="flex flex-col">
         <h3 className="font-semibold">{item.name}</h3>
         <p className="text-xs text-gray-500">{item?.email}</p>
       </div>
     </td>
     <td className="hidden md:table-cell">{item.username}</td>
-    <td className="hidden md:table-cell">{item.subjects.map(item=>item.name).join(",")}</td>
-    <td className="hidden md:table-cell">{item.classes.map(item=>item.name).join(',')}</td>
+    <td className="hidden md:table-cell">{item.subjects.map(item => item.name).join(",")}</td>
+    <td className="hidden md:table-cell">{item.classes.map(item => item.name).join(',')}</td>
     <td className="hidden lg:table-cell">{item.phone}</td>
     <td className="hidden lg:table-cell">{item.address}</td>
     <td>
       <div className="flex items-center gap-2">
-          <Link href={`/list/teachers/${item.id}`}>
+        <Link href={`/list/teachers/${item.id}`}>
           <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaSky">
-            <Image src={'/view.png'} alt="" width={16} height={16}/>
+            <Image src={'/view.png'} alt="" width={16} height={16} />
           </button>
-          </Link>
-          {role === "admin" && (
-            <FormModal table="teacher" type="delete" id={parseInt(item.id)}/>
-          )}
+        </Link>
+        {role === "admin" && (
+          <FormModal table="teacher" type="delete" id={parseInt(item.id)} />
+        )}
       </div>
     </td>
 
@@ -80,24 +80,43 @@ const renderRow = ((item:TeacherData)=> (
 
 
 
-const TeacherList = async ({searchParams}:{
-  searchParams: {[key: string]: string | undefined }
+const TeacherList = async ({ searchParams }: {
+  searchParams: { [key: string]: string | undefined }
 }) => {
 
-  const {page, ...quaryParams} = searchParams;
+  const { page, ...queryParams } = searchParams;
 
   const p = page ? parseInt(page) : 1;
 
+  //URL PARAMS CONDITION
+  const query:Prisma.TeacherWhereInput  = {};
+
+  if (queryParams) {
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (value !== undefined) {
+        switch (key) {
+          case ("classId"):
+            query.lessons = { some: { classId: parseInt(value) } }
+            break;
+          case ("search"):
+            query.name = {contains: value,mode:"insensitive"}
+        }
+      }
+
+    }
+  }
+
   const [data, count] = await prisma.$transaction([
     prisma.teacher.findMany({
+      where: query,
       include: {
         subjects: true,
         classes: true
       },
       take: ITEM_PER_PAGE,
-      skip: ITEM_PER_PAGE * (p-1)
+      skip: ITEM_PER_PAGE * (p - 1)
     }),
-    prisma.teacher.count()
+    prisma.teacher.count({where:query})
   ])
 
 
@@ -116,16 +135,16 @@ const TeacherList = async ({searchParams}:{
               <Image src={'/sort.png'} alt="" width={14} height={14} />
             </button>
             {role === "admin" && <FormModal table="teacher" type="create" />
-              }
+            }
           </div>
         </div>
       </div>
       {/* LIST */}
       <div className="">
-        <Table columns={column} renderRow={renderRow} data={data}/>
+        <Table columns={column} renderRow={renderRow} data={data} />
       </div>
       {/* PAGINATION */}
-      <Pagination page={p} count={count}/>
+      <Pagination page={p} count={count} />
     </div>
   )
 }
