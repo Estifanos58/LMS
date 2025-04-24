@@ -38,7 +38,11 @@ const column = [
 
  const renderRow = ((item:ClassList)=> (
     <tr key={item.id} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
-      <td className="">{item.name}</td>
+      <td className="flex items-center gap-4 p-4">
+        <div className="flex flex-col">
+          <h3 className="font-semibold">{item.name}</h3>
+        </div>
+      </td>
       <td className="">{item.capacity}</td>
       <td className="hidden md:table-cell">{item.name[0]}</td>
       <td className="hidden md:table-cell">{item.supervisor.name + " " + item.supervisor.surname}</td>
