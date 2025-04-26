@@ -118,7 +118,7 @@ const AnnouncementsPage = async ({ searchParams }: {
       </div>
       {/* LIST */}
       <div className="">
-        <Table columns={column} renderRow={renderRow} data={announcementsData}/>  
+        <Table columns={column} renderRow={renderRow} data={data}/>  
       </div>
       {/* PAGINATION */}
       <Pagination page={p} count={count} />
