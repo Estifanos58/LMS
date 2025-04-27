@@ -2,12 +2,13 @@ import FormModal from "@/components/FormModal"
 import Pagination from "@/components/Pagination"
 import Table from "@/components/Table"
 import TableSearch from "@/components/TableSearch"
-import { assignmentsData, classesData, examsData, parentsData, role, studentsData, subjectsData, teachersData } from "@/lib/data"
 import prisma from "@/lib/prisma"
 import { ITEM_PER_PAGE } from "@/lib/settings"
+import { auth, currentUser } from "@clerk/nextjs/server"
 import { Assignment, Class, Prisma, Subject, Teacher } from "@prisma/client"
 import Image from "next/image"
 import Link from "next/link"
+import { currentUserId, role } from "@/lib/utils"
 
 type AssignmentType = Assignment & {
   lesson: {
@@ -54,7 +55,7 @@ const renderRow = ((item:AssignmentType)=> (
       <td className="hidden md:table-cell">{new Intl.DateTimeFormat("en-US").format(item.dueDate)}</td>
       <td>
         <div className="flex items-center gap-2">
-            {role === "admin" && (
+            {(role === "admin" || role === "teacher") && (
                <>
                <FormModal table="assignment" type="update" data={item}/>
                <FormModal table="assignment" type="delete" id={item.id}/>
@@ -77,25 +78,37 @@ const AssignmentPage = async ({
 
   //URL PARAMS CONDITION
   const query: Prisma.AssignmentWhereInput = {};
+  query.lesson = {}
 
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
         switch (key) {
           case "classId":
-            query.lesson = {classId: parseInt(value)}
+            query.lesson.classId = parseInt(value)
             break;
           case "teacherId":
-            query.lesson = {teacherId: value}
+            query.lesson.teacherId = value
             break;
           case "search":
-            query.lesson = {subject: {name: {contains: value, mode: "insensitive"}}}
+            query.lesson.subject = {name: {contains: value, mode: "insensitive"}}
             break;
           default:
             break;
         }
       }
     }
+  }
+
+  // ROLE CONDITIONS
+
+  switch (role) {
+    case "admin":
+      break;
+    case "teacher":
+      query.lesson.teacherId =  currentUserId!;
+    default:
+      break;
   }
 
   const [data, count] = await prisma.$transaction([
