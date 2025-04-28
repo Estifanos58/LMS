@@ -113,7 +113,27 @@ const ResultsPage = async ({
       }
     }
   }
+  
+  //ROLE CONDITIONS
 
+  switch (role) {
+    case "admin":
+      break;
+    case "teacher": 
+      query.OR = [
+        {exam: {lesson: {teacherId: currentUserId!}}},
+        {assignment: {lesson : {teacherId: currentUserId!}}}
+      ]
+      break;
+    case "student": 
+      query.studentId = currentUserId!;
+      break;
+    case "parent":
+      query.student = {parentId: currentUserId!}
+      break;
+    default:
+      break;
+  }
   const [dataResponse, count] = await prisma.$transaction([
     prisma.result.findMany({
       where: query,
@@ -172,7 +192,7 @@ const data = dataResponse.map((item)=>{
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src={'/sort.png'} alt="" width={14} height={14} />
             </button>
-           {role === "admin" && <FormModal table="result" type="create" />
+           {(role === "admin" || role === "teacher") && <FormModal table="result" type="create" />
             }
           </div>
         </div>
