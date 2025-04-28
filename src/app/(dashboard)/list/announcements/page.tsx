@@ -7,7 +7,7 @@ import { ITEM_PER_PAGE } from "@/lib/settings"
 import { Announcement, Class, Prisma } from "@prisma/client"
 import Image from "next/image"
 import Link from "next/link"
-import { role } from "@/lib/utils"
+import { currentUserId, role } from "@/lib/utils"
 
 type AnnouncementList = Announcement & {class: Class} 
 
@@ -39,7 +39,7 @@ const column = [
           <h3 className="font-semibold">{item.title}</h3>
         </div>
       </td>
-      <td className="">{item.class.name}</td>
+      <td className="">{item.class?.name || "-"}</td>
       <td className="hidden md:table-cell">{ new Intl.DateTimeFormat("en-US").format(item.date)}</td>
 
       <td>
@@ -82,6 +82,21 @@ const AnnouncementsPage = async ({ searchParams }: {
 
     }
   }
+
+   // ROLE CONDITIONS
+  
+    const roleConditions = {
+      teacher: { lessons: { some: { teacherId: currentUserId! } } },
+      student: { students: { some: { id: currentUserId! } } },
+      parent: { students: { some: { parentId: currentUserId! } } },
+    };p
+  
+    query.OR = [
+      { classId: null },
+      {
+        class: roleConditions[role as keyof typeof roleConditions] || {},
+      },
+    ];
 
   const [data, count] = await prisma.$transaction([
     prisma.announcement.findMany({

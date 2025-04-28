@@ -2,12 +2,12 @@ import FormModal from "@/components/FormModal"
 import Pagination from "@/components/Pagination"
 import Table from "@/components/Table"
 import TableSearch from "@/components/TableSearch"
-import { assignmentsData, classesData, examsData, parentsData, resultsData, role, studentsData, subjectsData, teachersData } from "@/lib/data"
 import prisma from "@/lib/prisma"
 import { ITEM_PER_PAGE } from "@/lib/settings"
 import { Prisma, Result } from "@prisma/client"
 import Image from "next/image"
 import Link from "next/link"
+import { currentUserId, role } from "@/lib/utils"
 
 type ResultType = {
     id: number;
@@ -51,10 +51,10 @@ const column = [
     accessor: "date",
     className: "hidden md:table-cell"
   },
-  {
+  ...(role === "admin" || role === "teacher" ? [{
     header:"Actions", 
     accessor: "action",
-  },
+  }] : []),
 ]
 
   const renderRow = ((item:ResultType)=> (
@@ -72,7 +72,7 @@ const column = [
 
       <td>
         <div className="flex items-center gap-2">
-            {role === "admin" && (
+            {(role === "admin" || role === "teacher") && (
                <>
                <FormModal table="result" type="update" data={item}/>
                <FormModal table="result" type="delete" id={item.id}/>
