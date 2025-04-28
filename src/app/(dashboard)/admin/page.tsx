@@ -1,5 +1,7 @@
 import Announcements from "@/components/Announcements"
 import AttendanceChart from "@/components/AttendanceChart"
+import AttendanceChartContainer from "@/components/AttendanceChartContainer"
+import CountChartContainer from "@/components/CountChartContainer"
 import CounteChart from "@/components/CounteChart"
 import EventCalender from "@/components/EventCalender"
 import FinanceChart from "@/components/FinanceChart"
@@ -12,20 +14,20 @@ const AdminPage = () => {
       <div className="w-full lg:2/3 flex flex-col gap-8">
       {/* User cards */}
       <div className="flex gap-4 justify-between flex-wrap">
+        <UserCard type="admin"/>
         <UserCard type="student"/>
         <UserCard type="teacher"/>
         <UserCard type="parent"/>
-        <UserCard type="staff"/>
       </div>
       {/* MIDDLE CHART */}
       <div className="flex gap-4 flex-col lg:flex-row">
         {/* COUNT CHART */}
         <div className="wifull lg:w-1/3 h-[450px]">
-          <CounteChart/>
+          <CountChartContainer/>
         </div>
         {/* ATTENTION */}
         <div className="w-full lg:w-2/3 h-[450px]">
-          <AttendanceChart />
+          <AttendanceChartContainer/>
         </div>
       
       </div>
