@@ -19,8 +19,7 @@ const column = [
     header: "Teachers", 
     accessor: "teachers", 
     className: "hidden md:table-cell"
-  },
- 
+  }, 
   {
     header:"Actions", 
     accessor: "action",
