@@ -21,7 +21,12 @@ export default function SignInPage() {
 
     if(role == "admin"){
         router.push("/admin")
+    }else if(role === "teacher"){
+      router.push("teacher")
+    } else if(role === "student"){
+      router.push("student")
     }
+
     
   },[user, router])
   const handleSignIn = async (e: React.FormEvent) => {
