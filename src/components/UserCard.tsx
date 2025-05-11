@@ -29,4 +29,4 @@ const UserCard = async ({
   );
 };
 
-export default UserCard;
+export default UserCard;  
